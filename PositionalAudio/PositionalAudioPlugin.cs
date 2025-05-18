@@ -13,20 +13,20 @@ namespace PositionalAudio
     public unsafe class PositionalAudioPlugin : BasePlugin
     {
         internal static ManualLogSource mls;
+
+        internal static LocalPlayer player = null;
+
         internal static Vector3 playerCoords;
         internal static Vector3 playerRotation;
         internal static string playerId = "";
-        internal enum PlayerState
-        {
-            MainMenu,
-            InWorld
-        }
-
-        internal static LocalPlayer player = null;
-        internal static MumbleLinkFile mumbleLink;
         internal static string context = "Lobby";
-        internal static GameObject UiGameObject;
 
+        internal static MumbleLinkFile mumbleLink;
+
+
+#if DEBUG
+        internal static GameObject UiGameObject;
+#endif
         //internal static 
 
         public override void Load()
@@ -36,15 +36,17 @@ namespace PositionalAudio
 
             Harmony.CreateAndPatchAll(typeof(PositionalAudioPlugin), MyPluginInfo.PLUGIN_GUID);
 
-            /* for testing purposes
+
+#if DEBUG
+            // for testing purposes
             IL2CPPChainloader.AddUnityComponent<DebugInfo>();
             UiGameObject = new();
             UiGameObject.AddComponent<DebugInfo>();
             GameObject.DontDestroyOnLoad(UiGameObject);
-            */
+#endif
+
 
             mls.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
-
 
         }
         public override bool Unload()
@@ -120,8 +122,9 @@ namespace PositionalAudio
             {
                 playerCoords = __instance.PlayerSync.PlayerWorldPosition;
                 playerRotation = player.CameraManager.LookRay.direction.normalized;
-
-                playerId = player.PlayerNetwork.NetworkPlayerId;
+                //i expected them to be present at `LocalPlayerService.RegisterLocalPlayer`, but they arent
+                //no harm in reassigning them each PlayerNetwork update, but might move all that logic to a different hook later on, since we only care for local player which we already have
+                playerId = player.PlayerNetwork.NetworkPlayerId; 
                 context = player._sessionService._currentWorldId;
 
                 updateMumbleLink();
@@ -144,7 +147,11 @@ namespace PositionalAudio
         {
             stopMumbleLink();
             player = null;
-            context = "Lobby"; //unnecessary
+            //for debug info
+            context = "Lobby";
+            playerCoords = new Vector3();
+            playerRotation = new Vector3();
+            playerId = "";
         }
 
 
