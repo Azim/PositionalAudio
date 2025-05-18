@@ -1,0 +1,9 @@
+{
+    "name": "PositionalAudio",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/Azim/PositionalAudio",
+    "description": "Mumble positional audio integration.",
+    "dependencies": [
+		"BepInEx-BepInExPack_IL2CPP-6.0.733"
+	]
+}
